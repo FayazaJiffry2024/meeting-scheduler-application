@@ -32,8 +32,6 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            // This is needed for Sanctum to recognize frontend requests
-            \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             \App\Http\Middleware\CorsMiddleware::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,

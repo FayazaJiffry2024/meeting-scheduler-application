@@ -9,7 +9,6 @@
         "google/apiclient": "^2.15",
         "guzzlehttp/guzzle": "^7.2",
         "laravel/framework": "^10.0",
-        "laravel/sanctum": "*",
         "laravel/tinker": "^2.8"
     },
     "require-dev": {

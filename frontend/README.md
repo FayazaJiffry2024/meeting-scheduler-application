@@ -1,70 +1,325 @@
-# Getting Started with Create React App
+# Meeting Scheduler with Google Calendar Integration
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack application for scheduling meetings with Google Calendar integration, built with React frontend and Laravel backend, with CI/CD using Jenkins.
 
-## Available Scripts
+## 🏗️ Architecture
 
-In the project directory, you can run:
+```
+meeting-scheduler-app/
+├── backend/                    # Laravel API
+│   ├── app/
+│   │   ├── Http/Controllers/  # API Controllers
+│   │   ├── Models/            # Eloquent Models
+│   │   └── Services/          # Business Logic
+│   ├── database/
+│   │   └── migrations/        # Database Migrations
+│   ├── routes/
+│   │   └── api.php           # API Routes
+│   └── Dockerfile
+├── frontend/                   # React Application
+│   ├── src/
+│   │   ├── components/       # Reusable Components
+│   │   ├── pages/           # Page Components
+│   │   └── services/        # API Service
+│   └── Dockerfile
+├── docker-compose.yml         # Docker orchestration
+└── Jenkinsfile               # CI/CD Pipeline
+```
 
-### `npm start`
+## ✨ Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+- **Meeting Management**: Create, read, update, and delete meetings
+- **Google Calendar Integration**: Sync meetings with Google Calendar
+- **OAuth 2.0 Authentication**: Secure Google Calendar connection
+- **Calendar View**: Visual calendar interface with react-big-calendar
+- **Availability Checking**: Check time slot availability before scheduling
+- **Responsive Design**: Mobile-friendly interface
+- **Dockerized**: Easy deployment with Docker and Docker Compose
+- **CI/CD**: Automated testing and deployment with Jenkins
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+## 🛠️ Technology Stack
 
-### `npm test`
+### Backend
+- **Framework**: Laravel 10.x
+- **Database**: MySQL 8.0
+- **Authentication**: Laravel Sanctum
+- **Google Calendar API**: google/apiclient
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Frontend
+- **Framework**: React 18
+- **Routing**: React Router v6
+- **Calendar**: react-big-calendar
+- **HTTP Client**: Axios
+- **Notifications**: react-toastify
 
-### `npm run build`
+### DevOps
+- **Containerization**: Docker & Docker Compose
+- **CI/CD**: Jenkins
+- **Version Control**: Git
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 📋 Prerequisites
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+- PHP 8.1 or higher
+- Node.js 18 or higher
+- Composer
+- MySQL 8.0
+- Docker & Docker Compose (for containerized deployment)
+- Jenkins (for CI/CD)
+- Google Cloud Console account (for Google Calendar API)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## 🚀 Getting Started
 
-### `npm run eject`
+### 1. Clone the Repository
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```bash
+git clone <repository-url>
+cd meeting-scheduler-app
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### 2. Google Calendar API Setup
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select existing one
+3. Enable Google Calendar API
+4. Create OAuth 2.0 credentials (Web application)
+5. Add authorized redirect URI: `http://localhost:8000/api/google/callback`
+6. Save your Client ID and Client Secret
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+### 3. Backend Setup
 
-## Learn More
+```bash
+cd backend
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+# Install dependencies
+composer install
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+# Copy environment file
+cp .env.example .env
 
-### Code Splitting
+# Generate application key
+php artisan key:generate
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+# Configure .env file with your settings
+# - Database credentials
+# - Google Calendar API credentials (GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET)
+# - Frontend URL
 
-### Analyzing the Bundle Size
+# Run migrations
+php artisan migrate
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+# Start development server
+php artisan serve
+```
 
-### Making a Progressive Web App
+### 4. Frontend Setup
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+```bash
+cd frontend
 
-### Advanced Configuration
+# Install dependencies
+npm install
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+# Copy environment file
+cp .env.example .env
 
-### Deployment
+# Configure .env with backend API URL
+# REACT_APP_API_URL=http://localhost:8000/api
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+# Start development server
+npm start
+```
 
-### `npm run build` fails to minify
+The application will be available at:
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8000/api
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 🐳 Docker Deployment
+
+### Using Docker Compose
+
+```bash
+# Build and start all services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+```
+
+Services:
+- Frontend: http://localhost:3000
+- Backend: http://localhost:8000
+- MySQL: localhost:3306
+
+### Environment Configuration for Docker
+
+Update environment variables in `docker-compose.yml` or create `.env` files in respective directories.
+
+## 🔧 Configuration
+
+### Backend Environment Variables
+
+```env
+# Application
+APP_NAME="Meeting Scheduler"
+APP_URL=http://localhost:8000
+
+# Database
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=meeting_scheduler
+DB_USERNAME=root
+DB_PASSWORD=
+
+# Frontend URL (for CORS)
+FRONTEND_URL=http://localhost:3000
+
+# Google Calendar API
+GOOGLE_CLIENT_ID=your_client_id
+GOOGLE_CLIENT_SECRET=your_client_secret
+GOOGLE_REDIRECT_URI=http://localhost:8000/api/google/callback
+```
+
+### Frontend Environment Variables
+
+```env
+REACT_APP_API_URL=http://localhost:8000/api
+```
+
+## 📡 API Endpoints
+
+### Meetings
+- `GET /api/meetings` - Get all meetings
+- `POST /api/meetings` - Create a new meeting
+- `GET /api/meetings/{id}` - Get specific meeting
+- `PUT /api/meetings/{id}` - Update meeting
+- `DELETE /api/meetings/{id}` - Delete meeting
+- `POST /api/meetings/{id}/sync` - Sync meeting to Google Calendar
+
+### Google Calendar
+- `GET /api/google/auth` - Get OAuth authorization URL
+- `GET /api/google/callback` - OAuth callback handler
+- `POST /api/google/disconnect` - Disconnect Google Calendar
+- `GET /api/calendar/events` - Get calendar events
+- `GET /api/calendar/availability` - Check time slot availability
+
+## 🧪 Testing
+
+### Backend Tests
+
+```bash
+cd backend
+php artisan test
+```
+
+### Frontend Tests
+
+```bash
+cd frontend
+npm test
+```
+
+## 🚀 CI/CD with Jenkins
+
+### Pipeline Setup
+
+1. Install Jenkins plugins:
+   - Docker Pipeline
+   - Git
+   - NodeJS
+   - Pipeline
+
+2. Create new Pipeline job
+
+3. Configure SCM:
+   - Repository URL
+   - Credentials
+   - Branch specifier
+
+4. Pipeline script: Use `Jenkinsfile` from repository
+
+5. Configure credentials:
+   - Docker registry credentials
+   - Deployment server SSH keys
+
+### Pipeline Stages
+
+1. **Checkout**: Clone repository
+2. **Backend Tests**: Run PHPUnit tests
+3. **Frontend Tests**: Run Jest tests
+4. **Build**: Create production builds
+5. **Docker Build**: Build Docker images
+6. **Push**: Push images to registry (main branch only)
+7. **Deploy**: Deploy to staging/production
+
+## 📝 Development Workflow
+
+1. Create a feature branch from `develop`
+2. Make your changes
+3. Write/update tests
+4. Commit and push to repository
+5. Create Pull Request
+6. Jenkins will automatically run tests
+7. After review, merge to `develop` for staging deployment
+8. Merge to `main` for production deployment
+
+## 🔒 Security Considerations
+
+- Store sensitive credentials in environment variables
+- Use HTTPS in production
+- Implement rate limiting for API endpoints
+- Regular security updates for dependencies
+- Secure OAuth token storage
+- Implement proper CORS configuration
+
+## 📦 Database Schema
+
+### meetings
+- id (PK)
+- user_id (FK)
+- title
+- description
+- start_time
+- end_time
+- attendees (JSON)
+- google_event_id
+- timestamps
+
+### users
+- id (PK)
+- name
+- email
+- password
+- google_access_token
+- timestamps
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 👥 Support
+
+For issues and questions:
+- Create an issue in the repository
+- Contact the development team
+
+## 🗺️ Roadmap
+
+- [ ] Email notifications for meetings
+- [ ] Recurring meetings support
+- [ ] Meeting templates
+- [ ] Multiple calendar support
+- [ ] Mobile application
+- [ ] Video conferencing integration
+- [ ] Meeting analytics and reports

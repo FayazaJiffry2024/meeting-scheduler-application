@@ -1,0 +1,152 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKER_REGISTRY = 'your-registry'
+        BACKEND_IMAGE = 'meeting-scheduler-backend'
+        FRONTEND_IMAGE = 'meeting-scheduler-frontend'
+        VERSION = "${env.BUILD_NUMBER}"
+    }
+    
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        
+        stage('Backend - Install Dependencies') {
+            steps {
+                dir('backend') {
+                    sh 'composer install --no-interaction --prefer-dist --optimize-autoloader'
+                }
+            }
+        }
+        
+        stage('Backend - Run Tests') {
+            steps {
+                dir('backend') {
+                    sh 'php artisan test'
+                }
+            }
+        }
+        
+        stage('Backend - Code Quality') {
+            steps {
+                dir('backend') {
+                    sh 'vendor/bin/phpstan analyse --memory-limit=2G || true'
+                    sh 'vendor/bin/pint --test || true'
+                }
+            }
+        }
+        
+        stage('Frontend - Install Dependencies') {
+            steps {
+                dir('frontend') {
+                    sh 'npm ci'
+                }
+            }
+        }
+        
+        stage('Frontend - Run Tests') {
+            steps {
+                dir('frontend') {
+                    sh 'npm test -- --watchAll=false --coverage'
+                }
+            }
+        }
+        
+        stage('Frontend - Build') {
+            steps {
+                dir('frontend') {
+                    sh 'npm run build'
+                }
+            }
+        }
+        
+        stage('Build Docker Images') {
+            parallel {
+                stage('Build Backend Image') {
+                    steps {
+                        dir('backend') {
+                            sh """
+                                docker build -t ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${VERSION} .
+                                docker tag ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${VERSION} ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest
+                            """
+                        }
+                    }
+                }
+                
+                stage('Build Frontend Image') {
+                    steps {
+                        dir('frontend') {
+                            sh """
+                                docker build -t ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${VERSION} .
+                                docker tag ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${VERSION} ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:latest
+                            """
+                        }
+                    }
+                }
+            }
+        }
+        
+        stage('Push Docker Images') {
+            when {
+                branch 'main'
+            }
+            steps {
+                script {
+                    docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-credentials') {
+                        sh "docker push ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:${VERSION}"
+                        sh "docker push ${DOCKER_REGISTRY}/${BACKEND_IMAGE}:latest"
+                        sh "docker push ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:${VERSION}"
+                        sh "docker push ${DOCKER_REGISTRY}/${FRONTEND_IMAGE}:latest"
+                    }
+                }
+            }
+        }
+        
+        stage('Deploy to Staging') {
+            when {
+                branch 'develop'
+            }
+            steps {
+                script {
+                    sh """
+                        docker-compose -f docker-compose.staging.yml down
+                        docker-compose -f docker-compose.staging.yml up -d
+                    """
+                }
+            }
+        }
+        
+        stage('Deploy to Production') {
+            when {
+                branch 'main'
+            }
+            steps {
+                input message: 'Deploy to Production?', ok: 'Deploy'
+                script {
+                    sh """
+                        docker-compose -f docker-compose.prod.yml down
+                        docker-compose -f docker-compose.prod.yml up -d
+                    """
+                }
+            }
+        }
+    }
+    
+    post {
+        success {
+            echo 'Pipeline executed successfully!'
+            // Add notification (Slack, Email, etc.)
+        }
+        failure {
+            echo 'Pipeline failed!'
+            // Add notification (Slack, Email, etc.)
+        }
+        always {
+            cleanWs()
+        }
+    }
+}

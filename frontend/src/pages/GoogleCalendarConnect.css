@@ -1,0 +1,42 @@
+.google-calendar-connect {
+  padding: 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60vh;
+}
+
+.connect-container {
+  background: white;
+  border-radius: 8px;
+  padding: 48px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  max-width: 500px;
+}
+
+.success-icon,
+.error-icon {
+  font-size: 64px;
+  margin-bottom: 24px;
+}
+
+.success-icon {
+  color: #10b981;
+}
+
+.error-icon {
+  color: #ef4444;
+}
+
+.success-message h2,
+.error-message h2 {
+  margin-bottom: 16px;
+  color: #1f2937;
+}
+
+.success-message p,
+.error-message p {
+  color: #6b7280;
+  margin-bottom: 8px;
+}

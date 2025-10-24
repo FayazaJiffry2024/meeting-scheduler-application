@@ -1,0 +1,76 @@
+version: '3.8'
+
+services:
+  # MySQL Database
+  mysql:
+    image: mysql:8.0
+    container_name: meeting-scheduler-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: meeting_scheduler
+      MYSQL_ROOT_PASSWORD: root_password
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: app_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - meeting-scheduler-network
+
+  # Laravel Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: meeting-scheduler-backend
+    restart: unless-stopped
+    working_dir: /var/www
+    environment:
+      DB_CONNECTION: mysql
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_DATABASE: meeting_scheduler
+      DB_USERNAME: app_user
+      DB_PASSWORD: app_password
+      FRONTEND_URL: http://localhost:3000
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/var/www
+      - backend_vendor:/var/www/vendor
+    depends_on:
+      - mysql
+    networks:
+      - meeting-scheduler-network
+    command: php artisan serve --host=0.0.0.0 --port=8000
+
+  # React Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: meeting-scheduler-frontend
+    restart: unless-stopped
+    environment:
+      REACT_APP_API_URL: http://localhost:8000/api
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - meeting-scheduler-network
+    stdin_open: true
+    tty: true
+
+networks:
+  meeting-scheduler-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+  backend_vendor:
+  frontend_node_modules:

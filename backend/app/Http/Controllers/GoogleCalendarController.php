@@ -19,7 +19,8 @@ class GoogleCalendarController extends Controller
      */
     public function authorize(Request $request)
     {
-        $authUrl = $this->calendarService->getAuthUrl($request->user()->id);
+        // Using hardcoded user ID for demo (no auth)
+        $authUrl = $this->calendarService->getAuthUrl(1);
         return response()->json(['auth_url' => $authUrl]);
     }
 
@@ -50,8 +51,10 @@ class GoogleCalendarController extends Controller
      */
     public function disconnect(Request $request)
     {
+        // Mock user for demo
+        $mockUser = (object)['id' => 1];
         try {
-            $this->calendarService->disconnect($request->user());
+            $this->calendarService->disconnect($mockUser);
             return response()->json(['message' => 'Google Calendar disconnected successfully']);
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
@@ -63,11 +66,13 @@ class GoogleCalendarController extends Controller
      */
     public function getEvents(Request $request)
     {
+        // Mock user for demo
+        $mockUser = (object)['id' => 1];
         $startDate = $request->input('start_date', now()->toIso8601String());
         $endDate = $request->input('end_date', now()->addDays(30)->toIso8601String());
 
         try {
-            $events = $this->calendarService->getEvents($request->user(), $startDate, $endDate);
+            $events = $this->calendarService->getEvents($mockUser, $startDate, $endDate);
             return response()->json(['events' => $events]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch events: ' . $e->getMessage()], 500);
@@ -79,6 +84,8 @@ class GoogleCalendarController extends Controller
      */
     public function checkAvailability(Request $request)
     {
+        // Mock user for demo
+        $mockUser = (object)['id' => 1];
         $request->validate([
             'start_time' => 'required|date',
             'end_time' => 'required|date|after:start_time',
@@ -86,7 +93,7 @@ class GoogleCalendarController extends Controller
 
         try {
             $isAvailable = $this->calendarService->checkAvailability(
-                $request->user(),
+                $mockUser,
                 $request->start_time,
                 $request->end_time
             );

@@ -11,19 +11,15 @@ use App\Http\Controllers\GoogleCalendarController;
 |--------------------------------------------------------------------------
 */
 
-Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
-    return $request->user();
-});
-
-// Google Calendar Authentication Routes
+// Google Calendar Authentication Routes (no auth required for now)
 Route::prefix('google')->group(function () {
     Route::get('/auth', [GoogleCalendarController::class, 'authorize']);
     Route::get('/callback', [GoogleCalendarController::class, 'callback']);
-    Route::post('/disconnect', [GoogleCalendarController::class, 'disconnect'])->middleware('auth:sanctum');
+    Route::post('/disconnect', [GoogleCalendarController::class, 'disconnect']);
 });
 
-// Meeting Routes (Protected)
-Route::middleware('auth:sanctum')->prefix('meetings')->group(function () {
+// Meeting Routes (Temporarily unprotected for testing)
+Route::prefix('meetings')->group(function () {
     Route::get('/', [MeetingController::class, 'index']);
     Route::post('/', [MeetingController::class, 'store']);
     Route::get('/{id}', [MeetingController::class, 'show']);
@@ -32,8 +28,8 @@ Route::middleware('auth:sanctum')->prefix('meetings')->group(function () {
     Route::post('/{id}/sync', [MeetingController::class, 'syncToCalendar']);
 });
 
-// Calendar Events Routes
-Route::middleware('auth:sanctum')->prefix('calendar')->group(function () {
+// Calendar Events Routes (no auth required for now)
+Route::prefix('calendar')->group(function () {
     Route::get('/events', [GoogleCalendarController::class, 'getEvents']);
     Route::get('/availability', [GoogleCalendarController::class, 'checkAvailability']);
 });

@@ -1,39 +1,17 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || 'http://localhost:8000/api',
+  baseURL: 'http://localhost:8000/api', // Laravel API
+  withCredentials: true, // Required for Sanctum
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor to add auth token
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem('auth_token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => {
-    return Promise.reject(error);
-  }
-);
-
-// Response interceptor to handle errors
-api.interceptors.response.use(
-  (response) => {
-    return response;
-  },
-  (error) => {
-    if (error.response?.status === 401) {
-      // Handle unauthorized access
-      localStorage.removeItem('auth_token');
-      // Optionally redirect to login
-    }
-    return Promise.reject(error);
-  }
-);
+// Make sure CSRF cookie is loaded before POST/PUT/DELETE
+api.interceptors.request.use(async (config) => {
+  await axios.get('http://localhost:8000/sanctum/csrf-cookie', { withCredentials: true });
+  return config;
+});
 
 export default api;

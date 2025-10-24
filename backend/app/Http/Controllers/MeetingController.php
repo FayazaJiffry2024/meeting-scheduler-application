@@ -21,10 +21,7 @@ class MeetingController extends Controller
      */
     public function index(Request $request)
     {
-        $meetings = Meeting::where('user_id', $request->user()->id)
-            ->orderBy('start_time', 'desc')
-            ->get();
-
+        $meetings = Meeting::orderBy('start_time', 'desc')->get();
         return response()->json(['meetings' => $meetings]);
     }
 
@@ -48,7 +45,7 @@ class MeetingController extends Controller
         }
 
         $meeting = Meeting::create([
-            'user_id' => $request->user()->id,
+            'user_id' => 1, // Temporary: hardcoded user ID
             'title' => $request->title,
             'description' => $request->description,
             'start_time' => $request->start_time,
@@ -59,7 +56,8 @@ class MeetingController extends Controller
         // Sync to Google Calendar if requested
         if ($request->sync_to_calendar) {
             try {
-                $calendarEventId = $this->calendarService->createEvent($request->user(), $meeting);
+                $mockUser = (object)['id' => 1];
+                $calendarEventId = $this->calendarService->createEvent($mockUser, $meeting);
                 $meeting->update(['google_event_id' => $calendarEventId]);
             } catch (\Exception $e) {
                 return response()->json([
@@ -77,9 +75,7 @@ class MeetingController extends Controller
      */
     public function show(Request $request, $id)
     {
-        $meeting = Meeting::where('user_id', $request->user()->id)
-            ->findOrFail($id);
-
+        $meeting = Meeting::findOrFail($id);
         return response()->json(['meeting' => $meeting]);
     }
 
@@ -101,8 +97,7 @@ class MeetingController extends Controller
             return response()->json(['errors' => $validator->errors()], 422);
         }
 
-        $meeting = Meeting::where('user_id', $request->user()->id)
-            ->findOrFail($id);
+        $meeting = Meeting::findOrFail($id);
 
         $meeting->update($request->only([
             'title', 'description', 'start_time', 'end_time', 'attendees'
@@ -111,7 +106,8 @@ class MeetingController extends Controller
         // Update Google Calendar event if synced
         if ($meeting->google_event_id) {
             try {
-                $this->calendarService->updateEvent($request->user(), $meeting);
+                $mockUser = (object)['id' => 1];
+                $this->calendarService->updateEvent($mockUser, $meeting);
             } catch (\Exception $e) {
                 return response()->json([
                     'meeting' => $meeting,
@@ -128,13 +124,13 @@ class MeetingController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        $meeting = Meeting::where('user_id', $request->user()->id)
-            ->findOrFail($id);
+        $meeting = Meeting::findOrFail($id);
 
         // Delete from Google Calendar if synced
         if ($meeting->google_event_id) {
             try {
-                $this->calendarService->deleteEvent($request->user(), $meeting->google_event_id);
+                $mockUser = (object)['id' => 1];
+                $this->calendarService->deleteEvent($mockUser, $meeting->google_event_id);
             } catch (\Exception $e) {
                 // Log error but continue with deletion
             }
@@ -150,15 +146,15 @@ class MeetingController extends Controller
      */
     public function syncToCalendar(Request $request, $id)
     {
-        $meeting = Meeting::where('user_id', $request->user()->id)
-            ->findOrFail($id);
+        $meeting = Meeting::findOrFail($id);
 
         if ($meeting->google_event_id) {
             return response()->json(['error' => 'Meeting already synced to calendar'], 400);
         }
 
         try {
-            $calendarEventId = $this->calendarService->createEvent($request->user(), $meeting);
+            $mockUser = (object)['id' => 1];
+            $calendarEventId = $this->calendarService->createEvent($mockUser, $meeting);
             $meeting->update(['google_event_id' => $calendarEventId]);
 
             return response()->json([

@@ -13,7 +13,17 @@ return new class extends Migration
     {
         Schema::create('meetings', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->string('title');
+            $table->text('description')->nullable();
+            $table->dateTime('start_time');
+            $table->dateTime('end_time');
+            $table->json('attendees')->nullable();
+            $table->string('google_event_id')->nullable();
             $table->timestamps();
+
+            $table->index('user_id');
+            $table->index('start_time');
         });
     }
 
